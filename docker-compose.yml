@@ -26,7 +26,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db-game
+      MYSQL_DATABASE: fourbito
     volumes:
       - mysql-volum:/var/lib/mysql:rw
       - ./back/data/create.sql:/docker-entrypoint-initdb.d/create.sql
