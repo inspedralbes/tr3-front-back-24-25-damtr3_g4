@@ -4,11 +4,13 @@ USE fourbito;
 -- Tabla de Usuarios
 CREATE TABLE User (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user VARCHAR(50) UNIQUE NOT NULL,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE,
     password VARCHAR(255) NOT NULL,
-    team VARCHAR(50),
+    id_team VARCHAR(50),
     id_inventory INT,
     FOREIGN KEY (id_inventory) REFERENCES Inventory(id) ON DELETE SET NULL
+    FOREIGN KEY (id_team) REFERENCES Teams(id) ON DELETE SET NULL
 );
 
 -- Tabla de Juegos
@@ -37,10 +39,10 @@ CREATE TABLE Inventory (
 -- Tabla de Partidas (Port)
 CREATE TABLE Game (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    p1 INT,
-    p2 INT,
-    t1 INT,
-    t2 INT,
+    user1 INT,
+    user2 INT,
+    team1 INT,
+    team2 INT,
     result VARCHAR(255),
     FOREIGN KEY (p1) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (p2) REFERENCES User(id) ON DELETE SET NULL
