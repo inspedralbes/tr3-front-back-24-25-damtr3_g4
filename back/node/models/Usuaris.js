@@ -1,5 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from '../config/database.js';
+import Team from '../models/Team.js';
+import Inventory from '../models/Inventory.js';
 // const bcrypt = require('bcryptjs');
 
 const Usuaris = sequelize.define('Users', {
@@ -23,10 +25,18 @@ const Usuaris = sequelize.define('Users', {
     id_team: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        references: {
+            model: Team,
+            key: 'id'
+        }
     },
     id_inventory: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        references: {
+            model: Inventory,
+            key: 'id'
+        }
     },
 }, {
     tableName: 'users',
