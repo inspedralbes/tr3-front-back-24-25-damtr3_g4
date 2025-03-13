@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from '../config/database.js';
-import Team from '../models/Team.js';
+import Team from './Team.js';
 import Inventory from '../models/Inventory.js';
 // const bcrypt = require('bcryptjs');
 

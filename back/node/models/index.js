@@ -3,11 +3,11 @@ import Usuaris from './Usuaris.js';
 import Player from './Player.js';
 import Inventory from './Inventory.js';
 // import Game from './Game.js';
-// import Teams from './Teams.js';
-// import Shop from './Shop.js';
+import Team from './Team.js';
+import Shop from './Shop.js';
 
-Usuaris.hasOne(Teams, { foreignKey: 'id_team' });
-Teams.belongsTo(Usuaris, { foreignKey: 'id_team' });
+Usuaris.hasOne(Team, { foreignKey: 'id_team' });
+Team.belongsTo(Usuaris, { foreignKey: 'id_team' });
 
 Usuaris.hasOne(Inventory, { foreignKey: 'id_inventory' });
 Inventory.belongsTo(Usuaris, { foreignKey: 'id_inventory' });
@@ -22,6 +22,6 @@ export {
     Player,
     Inventory,
     // Game,
-    // Teams,
-    // Shop
+    Team,
+    Shop,
 }

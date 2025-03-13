@@ -1,0 +1,98 @@
+services:
+  fourbito-front:
+    build:
+      context: ./front/fourbito
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front/fourbito:/app
+      - /app/node_modules
+      - /app/.nuxt
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true  
+      - HOST=0.0.0.0
+    env_file:
+      - .env           
+    restart: unless-stopped
+    networks:
+        - fourbito-network
+
+  fourbito-back:
+    build:
+      context: ./back/node
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+    volumes:
+      - ./back/node:/app
+      - /app/node_modules
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - fourbito-network
+
+  fourbito-mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=fourbito
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    volumes:
+      - fourbito-mysql-data:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - fourbito-network
+
+  fourbito-adminer:
+    image: adminer
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - fourbito-network
+
+  fourbito-mongodb:
+    image: mongo
+    container_name: fourbito-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - fourbito-mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    restart: unless-stopped
+    networks:
+      - fourbito-network
+
+  fourbito-mongo-express:
+    image: mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
+      - ME_CONFIG_MONGODB_URL=mongodb://root:root@fourbito-mongodb:27017/
+      - ME_CONFIG_BASICAUTH=false
+    restart: unless-stopped
+    networks:
+      - fourbito-network
+
+volumes:
+  fourbito-mysql-data:
+  fourbito-mongo-data:
+  
+networks:
+  fourbito-network:
+    driver: bridge
