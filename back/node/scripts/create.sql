@@ -44,8 +44,8 @@ CREATE TABLE Game (
     team1 INT,
     team2 INT,
     result VARCHAR(255),
-    FOREIGN KEY (p1) REFERENCES User(id) ON DELETE SET NULL,
-    FOREIGN KEY (p2) REFERENCES User(id) ON DELETE SET NULL
+    FOREIGN KEY (user1) REFERENCES User(id) ON DELETE SET NULL,
+    FOREIGN KEY (user2) REFERENCES User(id) ON DELETE SET NULL
 );
 
 -- Tabla de Equipos (Teams)

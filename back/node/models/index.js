@@ -1,27 +1,49 @@
-import { Sequelize } from 'sequelize';
-import Usuaris from './Usuaris.js';
-import Player from './Player.js';
-import Inventory from './Inventory.js';
-// import Game from './Game.js';
-// import Teams from './Teams.js';
-// import Shop from './Shop.js';
+import sequelize from '../config/database.js';
+import Usuaris from '../models/Usuaris.js';
+import defGame from '../models/Game.js';
+import defTeams from '../models/Teams.js';
+import defInventory from '../models/Inventory.js';
+import defShop from '../models/Shop.js';
+import defPlayer from '../models/Player.js';
+import loadInitialData from '../scripts/loadInitialData.js';
 
-Usuaris.hasOne(Teams, { foreignKey: 'id_team' });
-Teams.belongsTo(Usuaris, { foreignKey: 'id_team' });
+Usuaris(sequelize);
+defGame(sequelize);
+defTeams(sequelize);
+defInventory(sequelize);
+defShop(sequelize);
+defPlayer(sequelize);
 
-Usuaris.hasOne(Inventory, { foreignKey: 'id_inventory' });
-Inventory.belongsTo(Usuaris, { foreignKey: 'id_inventory' });
 
-Inventory.belongsTo(Shop, { foreignKey: 'id_item' });
-Shop.hasMany(Inventory, { foreignKey: 'id_item' });
+// Usuaris.belongsTo(Teams, { foreignKey: 'id_team' });
+// Teams.hasOne(Usuaris, { foreignKey: 'id_team' });
 
-// Game.belongsTo(Usuaris, { as: 'player1', foreignKey: 'user1' });
+// Usuaris.belongsTo(Inventory, { foreignKey: 'id_inventory' });
+// Inventory.hasOne(Usuaris, { foreignKey: 'id_inventory' });
+
+// Player.belongsTo(Game, { foreignKey: 'id_game' });
+// Usuaris.hasMany(Player, { foreignKey: 'id_user' });
+
+// Inventory.belongsTo(Shop, { foreignKey: 'id_item' }); //relacionar inventario con tienda
+// Shop.hasMany(Inventory, { foreignKey: 'id_item' });
+
+const syncDatabase = async () => {
+    try {
+        await sequelize.sync({ force: true }); // Sincroniza los modelos (force: true para recrear tablas)
+        console.log('Database synchronized');
+        await loadInitialData(); // Cargar datos iniciales
+    } catch (error) {
+        console.log('Error al sincronizar la base de datos', error);
+    }
+}
 
 export {
+    sequelize,
     Usuaris,
-    Player,
-    Inventory,
-    // Game,
-    // Teams,
-    // Shop
+    defGame,
+    defTeams,
+    defInventory,
+    defShop,
+    defPlayer,
+    syncDatabase
 }

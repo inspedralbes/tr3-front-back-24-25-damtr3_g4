@@ -1,10 +1,10 @@
 import { DataTypes } from "sequelize";
 import sequelize from '../config/database.js';
-import Team from '../models/Team.js';
-import Inventory from '../models/Inventory.js';
+// import defTeam from '../models/Teams.js';
+// import defInventory from '../models/Inventory.js';
 // const bcrypt = require('bcryptjs');
 
-const Usuaris = sequelize.define('Users', {
+const defUsuaris = sequelize.define('Users', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -26,7 +26,7 @@ const Usuaris = sequelize.define('Users', {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: Team,
+            model: 'teams',
             key: 'id'
         }
     },
@@ -34,7 +34,7 @@ const Usuaris = sequelize.define('Users', {
         type: DataTypes.INTEGER,
         allowNull: true,
         references: {
-            model: Inventory,
+            model: 'inventory',
             key: 'id'
         }
     },
@@ -50,4 +50,4 @@ const Usuaris = sequelize.define('Users', {
 
 });
 
-export default Usuaris;
+export default defUsuaris;

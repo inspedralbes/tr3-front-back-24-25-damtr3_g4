@@ -1,8 +1,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-
-const Player = sequelize.define('Player', {
+const defPlayer = sequelize.define('Player', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -18,4 +17,4 @@ const Player = sequelize.define('Player', {
 }
 );
 
-export default Player;
+export default defPlayer;

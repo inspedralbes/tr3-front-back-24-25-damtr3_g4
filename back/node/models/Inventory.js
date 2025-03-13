@@ -1,7 +1,8 @@
 import { DataTypes } from "sequelize";
 import sequelize from '../config/database.js';
+// import defShop from './Shop.js';
 
-const Inventory = sequelize.define('Inventory', {
+const defInventory = sequelize.define('Inventory', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
@@ -14,6 +15,10 @@ const Inventory = sequelize.define('Inventory', {
     id_item: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: 'shop',
+            key: 'id'
+        }
     },
     quantity: {
         type: DataTypes.INTEGER,
@@ -24,4 +29,4 @@ const Inventory = sequelize.define('Inventory', {
     timestamps: false,
 });
 
-export default Inventory;
+export default defInventory;

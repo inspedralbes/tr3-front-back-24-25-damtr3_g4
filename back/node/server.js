@@ -4,7 +4,7 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 // import { fileURLToPath } from 'url';
 // import { Sequelize } from 'sequelize';
-import { Usuaris } from './models/index.js';
+import { sequelize, Usuaris, syncDatabase } from './models/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +16,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 // app.use(bodyParser.json());
+
+syncDatabase().then(() => {
+    console.log('Database synchronized');
+}).catch((error) => {
+    console.error('Error starting server:', error);
+});
+
 
 app.post('/register', async (req, res) => {
     try {
@@ -118,3 +125,6 @@ app.delete('/users/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// startServer();
+
