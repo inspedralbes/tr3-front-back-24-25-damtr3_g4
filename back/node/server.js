@@ -4,7 +4,7 @@ import cors from 'cors';
 import bcrypt from 'bcryptjs';
 // import { fileURLToPath } from 'url';
 // import { Sequelize } from 'sequelize';
-import { sequelize, Usuaris, syncDatabase } from './models/index.js';
+import { Usuaris, syncDatabase } from './models/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

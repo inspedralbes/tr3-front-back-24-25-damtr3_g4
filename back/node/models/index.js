@@ -1,5 +1,5 @@
 import sequelize from '../config/database.js';
-import Usuaris from '../models/Usuaris.js';
+import defUsuaris from '../models/Usuaris.js';
 import defGame from '../models/Game.js';
 import defTeams from '../models/Teams.js';
 import defInventory from '../models/Inventory.js';
@@ -7,31 +7,42 @@ import defShop from '../models/Shop.js';
 import defPlayer from '../models/Player.js';
 import loadInitialData from '../scripts/loadInitialData.js';
 
-Usuaris(sequelize);
-defGame(sequelize);
-defTeams(sequelize);
-defInventory(sequelize);
-defShop(sequelize);
-defPlayer(sequelize);
+// Inicializar modelos
+const Usuaris = defUsuaris(sequelize);
+const Game = defGame(sequelize);
+const Teams = defTeams(sequelize);
+const Inventory = defInventory(sequelize);
+const Shop = defShop(sequelize);
+const Player = defPlayer(sequelize);
 
+// Definir relaciones correctamente
 
-// Usuaris.belongsTo(Teams, { foreignKey: 'id_team' });
-// Teams.hasOne(Usuaris, { foreignKey: 'id_team' });
+// Un usuario pertenece a un equipo
+Usuaris.belongsTo(Teams, { foreignKey: 'id_team', onDelete: 'SET NULL' });
+Teams.hasMany(Usuaris, { foreignKey: 'id_team', onDelete: 'SET NULL' });
 
-// Usuaris.belongsTo(Inventory, { foreignKey: 'id_inventory' });
-// Inventory.hasOne(Usuaris, { foreignKey: 'id_inventory' });
+// Un usuario tiene un inventario
+Usuaris.belongsTo(Inventory, { foreignKey: 'id_inventory', onDelete: 'CASCADE' });
+Inventory.hasOne(Usuaris, { foreignKey: 'id_inventory', onDelete: 'CASCADE' });
 
-// Player.belongsTo(Game, { foreignKey: 'id_game' });
-// Usuaris.hasMany(Player, { foreignKey: 'id_user' });
+// Un jugador pertenece a una partida
+Player.belongsTo(Game, { foreignKey: 'id_game', onDelete: 'CASCADE' });
+Game.hasMany(Player, { foreignKey: 'id_game', onDelete: 'CASCADE' });
 
-// Inventory.belongsTo(Shop, { foreignKey: 'id_item' }); //relacionar inventario con tienda
-// Shop.hasMany(Inventory, { foreignKey: 'id_item' });
+// Un usuario puede tener varios jugadores
+Usuaris.hasMany(Player, { foreignKey: 'id_user', onDelete: 'CASCADE' });
+Player.belongsTo(Usuaris, { foreignKey: 'id_user', onDelete: 'CASCADE' });
 
+// Un inventario pertenece a un ítem de la tienda
+Inventory.belongsTo(Shop, { foreignKey: 'id_item', onDelete: 'CASCADE' });
+Shop.hasMany(Inventory, { foreignKey: 'id_item', onDelete: 'CASCADE' });
+
+// Sincronizar la base de datos
 const syncDatabase = async () => {
     try {
-        await sequelize.sync({ force: true }); // Sincroniza los modelos (force: true para recrear tablas)
+        await sequelize.sync({ alter: true });
         console.log('Database synchronized');
-        await loadInitialData(); // Cargar datos iniciales
+        await loadInitialData();
     } catch (error) {
         console.log('Error al sincronizar la base de datos', error);
     }
@@ -40,10 +51,10 @@ const syncDatabase = async () => {
 export {
     sequelize,
     Usuaris,
-    defGame,
-    defTeams,
-    defInventory,
-    defShop,
-    defPlayer,
+    Game,
+    Teams,
+    Inventory,
+    Shop,
+    Player,
     syncDatabase
-}
+};
