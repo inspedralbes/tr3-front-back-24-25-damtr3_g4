@@ -27,15 +27,16 @@ syncDatabase().then(() => {
 app.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        console.log("username", username, "email", email, "password", password);
 
         const existingUser = await Usuaris.findOne({
             where: {
-                username, email
+                email
             },
         });
 
         if (existingUser) {
-            res.status(400).json({ message: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -47,7 +48,7 @@ app.post('/register', async (req, res) => {
             password: hashedPassword,
         });
 
-        res.status(200).json(newUser);
+        res.status(200).json({ message: "User registrado correctamente", user: newUser });
 
     } catch (error) {
         console.error('Error al registrar el usuario:', error);
@@ -57,10 +58,10 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
         // Buscar el usuario por nombre de usuario
-        const user = await Usuaris.findOne({ where: { username } });
+        const user = await Usuaris.findOne({ where: { email } });
 
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -74,6 +75,7 @@ app.post('/login', async (req, res) => {
 
         // Respuesta exitosa (puedes incluir un token JWT aquí si lo deseas)
         res.json({ message: 'Inicio de sesión exitoso', user });
+        console.log("inicio de sesión correcto");
     } catch (error) {
         console.error('Error al iniciar sesión:', error);
         res.status(500).json({ error: 'Error al iniciar sesión' });
