@@ -13,7 +13,7 @@
                 </div>
                 <div class="space-x-6 hidden md:flex">
                     <NuxtLink to="/" class="hover:text-yellow-400 transition duration-300">Inici</NuxtLink>
-                    <NuxtLink to="/admin" class="hover:text-yellow-400 transition duration-300">Configuració</NuxtLink>
+                    <a @click="navigateToAdmin" class="hover:text-yellow-400 transition duration-300 cursor-pointer">Configuració</a>
                 </div>
             </div>
         </nav>
@@ -75,6 +75,23 @@
         </footer>
     </div>
 </template>
+
+<script>
+import { useAuthStore } from '~/stores/auth';
+
+export default {
+    methods: {
+        navigateToAdmin() {
+            const authStore = useAuthStore();
+            if (authStore.isAuthenticated) {
+                this.$router.push('/admin');
+            } else {
+                this.$router.push('/login');
+            }
+        }
+    }
+};
+</script>
 
 <style scoped>
 .animate-fade-in {
