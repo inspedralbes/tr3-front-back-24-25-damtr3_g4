@@ -3,7 +3,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <!-- Logo or Title -->
             <NuxtLink to="/" class="text-2xl font-bold text-yellow-400 hover:text-yellow-500 transition duration-300">
-                Fourbitoo
+                Fourbito
             </NuxtLink>
 
             <!-- Navigation Links -->
