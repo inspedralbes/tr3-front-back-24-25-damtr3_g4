@@ -6,17 +6,7 @@
             <div class="absolute inset-0 bg-black/50"></div>
         </div>
 
-        <nav class="p-6 bg-gray-800/90 backdrop-blur-md fixed w-full z-50">
-            <div class="container mx-auto flex justify-between items-center">
-                <div class="text-2xl font-bold text-yellow-400 hover:text-yellow-500 transition duration-300">
-                    Joc de Futbol
-                </div>
-                <div class="space-x-6 hidden md:flex">
-                    <NuxtLink to="/" class="hover:text-yellow-400 transition duration-300">Inici</NuxtLink>
-                    <a @click="navigateToAdmin" class="hover:text-yellow-400 transition duration-300 cursor-pointer">Configuració</a>
-                </div>
-            </div>
-        </nav>
+        <Header />
 
         <!-- Secció Hero -->
         <section class="flex items-center justify-center h-screen relative z-20">

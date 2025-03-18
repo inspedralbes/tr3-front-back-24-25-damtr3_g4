@@ -4,16 +4,7 @@
             <div class="absolute inset-0 bg-black/60"></div>
         </div>
 
-        <nav class="p-6 bg-gray-800/95 backdrop-blur-md fixed w-full z-50">
-            <div class="container mx-auto flex justify-between items-center">
-                <NuxtLink to="/" class="text-2xl font-bold text-yellow-400 hover:text-yellow-500 transition duration-300">
-                    Joc de Futbol
-                </NuxtLink>
-                <div class="space-x-6 hidden md:flex">
-                    <NuxtLink to="/" class="hover:text-yellow-400 transition duration-300">Inici</NuxtLink>
-                </div>
-            </div>
-        </nav>
+        <Header />
 
         <section class="flex items-center justify-center h-screen relative z-20 px-4">
             <div class="text-center w-full max-w-md animate-fade-in">
