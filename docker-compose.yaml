@@ -58,6 +58,17 @@ services:
     networks:
       - fourbito-network
 
+  fourbito-back-odoo:
+    build:
+      context: ./back/odoo
+      dockerfile: Dockerfile
+    command: sh -c "cp .env.DEV .env && npm install && npm run dev"
+    volumes:
+      - ./back/odoo:/usr/src/app
+    working_dir: /usr/src/app
+    ports:
+      - "4001:4001"
+
   fourbito-adminer:
     image: adminer
     ports:
@@ -93,9 +104,56 @@ services:
     networks:
       - fourbito-network
 
+  fourbito-odoo:
+    image: odoo:17
+    depends_on:
+      - fourbito-odoo-db
+    ports:
+      - "8069:8069"
+    environment:
+      - HOST=fourbito-odoo-db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./back/odoo/odoo_files/config:/etc/odoo
+      - ./back/odoo/odoo_files/config/odoo.conf:/etc/conf/odoo.conf
+    command: >
+      sh -c " /entrypoint.sh; sleep 10; odoo -d odoo -i sale,invoicing,stock --without-demo=all --stop-after-init; if [ $? -eq 0 ]; then
+        echo 'Modules installed successfully. Starting Odoo server...';
+        odoo -d odoo;
+      else
+        echo 'Module installation failed. Check logs for details.';
+      fi "
+
+  fourbito-odoo-db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+
+  fourbito-pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - fourbito-odoo-db
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin4
+
 volumes:
   fourbito-mysql-data:
   fourbito-mongo-data:
+  odoo-db-data:
+  odoo-data:
+  pgadmin-data:
 
 
 networks:
