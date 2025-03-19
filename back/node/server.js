@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import { Usuaris, syncDatabase } from './models/index.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_PORT || 4000;
 
 // const __filename = fileURLToPath(import.meta.url);
 // const __dirname = path.dirname(__filename);
