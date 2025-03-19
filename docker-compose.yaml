@@ -38,6 +38,10 @@ services:
     restart: unless-stopped
     networks:
       - fourbito-network
+    links:
+      - fourbito-mysql
+    depends_on:
+      - fourbito-mysql
 
   fourbito-mysql:
     image: mysql:5.7
