@@ -1,9 +1,6 @@
 import express from 'express';
-// import path from 'path';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-// import { fileURLToPath } from 'url';
-// import { Sequelize } from 'sequelize';
 import { Usuaris, syncDatabase } from './models/index.js';
 
 const app = express();

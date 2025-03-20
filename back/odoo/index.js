@@ -235,49 +235,49 @@ app.get("/getProduct/:id", async (req, res) => {
 //     }
 // });
 
-// app.post("/createSaleOrder", async (req, res) => {
-//     try {
-//         const uid = await authenticate();
-//         if (!uid) throw new Error("Error de autenticación");
+app.post("/createSaleOrder", async (req, res) => {
+    try {
+        const uid = await authenticate();
+        if (!uid) throw new Error("Error de autenticación");
 
-//         const { partner_id, product_id, quantity, price } = req.body;
+        const { partner_id, product_id, quantity, price } = req.body;
 
-//         if (!partner_id || !product_id || !quantity || !price) {
-//             return res.status(400).json({ error: "Todos los campos son obligatorios" });
-//         }
+        if (!partner_id || !product_id || !quantity || !price) {
+            return res.status(400).json({ error: "Todos los campos son obligatorios" });
+        }
 
-//         const params = {
-//             partner_id,
-//             order_line: [
-//                 [
-//                     0, 0,
-//                     {
-//                         product_id,
-//                         product_uom_qty: quantity,
-//                         price_unit: price,
-//                         name: "Producto agregado automáticamente"
-//                     }
-//                 ]
-//             ]
-//         };
+        const params = {
+            partner_id,
+            order_line: [
+                [
+                    0, 0,
+                    {
+                        product_id,
+                        product_uom_qty: quantity,
+                        price_unit: price,
+                        name: "Producto agregado automáticamente"
+                    }
+                ]
+            ]
+        };
 
-//         object.methodCall(
-//             "execute_kw",
-//             [db, uid, password, "sale.order", "create", [params]],
-//             (err, orderId) => {
-//                 if (err) {
-//                     console.error("Error en la API de Odoo:", err);
-//                     return res.status(500).json({ error: err.faultString || "Error al crear la orden de venta" });
-//                 }
-//                 res.json({ message: "Orden creada con éxito", orderId });
-//             }
-//         );
+        object.methodCall(
+            "execute_kw",
+            [db, uid, password, "sale.order", "create", [params]],
+            (err, orderId) => {
+                if (err) {
+                    console.error("Error en la API de Odoo:", err);
+                    return res.status(500).json({ error: err.faultString || "Error al crear la orden de venta" });
+                }
+                res.json({ message: "Orden creada con éxito", orderId });
+            }
+        );
 
-//     } catch (error) {
-//         console.error("Error al crear la orden de venta:", error);
-//         res.status(500).json({ error: error.message || "Error al crear la orden de venta" });
-//     }
-// });
+    } catch (error) {
+        console.error("Error al crear la orden de venta:", error);
+        res.status(500).json({ error: error.message || "Error al crear la orden de venta" });
+    }
+});
 
 app.get("/getSaleOrders", async (req, res) => {
     try {
