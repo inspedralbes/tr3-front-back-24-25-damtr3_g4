@@ -6,6 +6,7 @@ import defInventory from '../models/Inventory.js';
 import defShop from '../models/Shop.js';
 import defPlayer from '../models/Player.js';
 import loadInitialData from '../scripts/loadInitialData.js';
+import defSettings from '../models/Settings.js';
 
 // Inicializar modelos
 const Usuaris = defUsuaris(sequelize);
@@ -14,6 +15,7 @@ const Teams = defTeams(sequelize);
 const Inventory = defInventory(sequelize);
 const Shop = defShop(sequelize);
 const Player = defPlayer(sequelize);
+const Settings = defSettings(sequelize);
 
 // Definir relaciones correctamente
 
@@ -56,5 +58,6 @@ export {
     Inventory,
     Shop,
     Player,
+    Settings,
     syncDatabase
 };

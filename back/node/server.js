@@ -1,28 +1,21 @@
 import express from 'express';
-// import path from 'path';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-// import { fileURLToPath } from 'url';
-// import { Sequelize } from 'sequelize';
-import { Usuaris, syncDatabase } from './models/index.js';
+import fs from 'fs';
+import { Usuaris, syncDatabase, Settings } from './models/index.js';
 
 const app = express();
 const PORT = process.env.NODE_PORT || 4000;
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.json());
 app.use(cors());
-// app.use(bodyParser.json());
 
 syncDatabase().then(() => {
     console.log('Database synchronized');
 }).catch((error) => {
     console.error('Error starting server:', error);
 });
-
 
 app.post('/register', async (req, res) => {
     try {
@@ -60,20 +53,17 @@ app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Buscar el usuario por nombre de usuario
         const user = await Usuaris.findOne({ where: { email } });
 
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        // Verificar la contraseña
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
             return res.status(401).json({ error: 'Contraseña incorrecta' });
         }
 
-        // Respuesta exitosa (puedes incluir un token JWT aquí si lo deseas)
         res.json({ message: 'Inicio de sesión exitoso', user });
         console.log("inicio de sesión correcto");
     } catch (error) {
@@ -82,6 +72,38 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post('/saveMatchConfig', async (req, res) => {
+    try {
+        const { matchDuration, goalsToWin, selectedPlayer } = req.body;
+
+        const [settings, created] = await Settings.upsert({
+            id: 1,
+            matchDuration,
+            goalsToWin,
+            selectedPlayer
+        });
+
+        res.status(200).json({ message: "Configuración guardada correctamente", settings });
+    } catch (error) {
+        console.error('Error al guardar la configuración:', error);
+        res.status(500).json({ error: 'Error al guardar la configuración' });
+    }
+});
+
+app.get('/getMatchConfig', async (req, res) => {
+    try {
+        const settings = await Settings.findByPk(1);
+
+        if (!settings) {
+            return res.status(404).json({ error: 'Configuración no encontrada' });
+        }
+
+        res.status(200).json(settings);
+    } catch (error) {
+        console.error('Error al obtener la configuración:', error);
+        res.status(500).json({ error: 'Error al obtener la configuración' });
+    }
+});
 
 app.get('/users', async (req, res) => {
     try {
@@ -117,7 +139,7 @@ app.delete('/users/:id', async (req, res) => {
         }
 
         await user.destroy();
-        res.status(204).send(); // Respuesta sin contenido
+        res.status(204).send();
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
         res.status(500).json({ error: 'Error al eliminar el usuario' });
@@ -127,6 +149,3 @@ app.delete('/users/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
-// startServer();
-

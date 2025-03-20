@@ -56,3 +56,10 @@ CREATE TABLE Teams (
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE,
     FOREIGN KEY (id_game) REFERENCES Game(id) ON DELETE CASCADE
 );
+
+CREATE TABLE Settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    matchDuration INT NOT NULL,
+    goalsToWin INT NOT NULL,
+    selectedPlayer INT NOT NULL
+);
