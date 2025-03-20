@@ -1,4 +1,4 @@
-const URL = 'http://localhost:4000';
+const URL = import.meta.env.VITE_URL_BACK;
 
 export async function saveMatchConfig(config) {
     try {
