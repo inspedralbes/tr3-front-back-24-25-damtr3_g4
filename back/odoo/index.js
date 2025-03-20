@@ -2,11 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import xmlrpc from 'xmlrpc';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 dotenv.config();
 
-const port = process.env.PORT || 4001;
+const port = process.env.PORT || 4002;
 app.use(express.json());
 app.use(cors({
     origin: '*',
@@ -28,12 +30,16 @@ const authenticate = () =>
         });
     });
 
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
 app.post("/createClient", async (req, res) => {
     try {
         const uid = await authenticate();
-        const { username, email } = req.body;
+        const { name, email } = req.body;
 
-        object.methodCall("execute_kw", [db, uid, password, "res.partner", "create", [{ username, email, customer_rank: 1 }]], (err, value) => {
+        object.methodCall("execute_kw", [db, uid, password, "res.partner", "create", [{ name, email, customer_rank: 1 }]], (err, value) => {
             if (err) {
                 console.error("Error al crear el cliente:", err);
                 res.status(500).json({ error: "Error al crear el cliente" });
@@ -53,7 +59,7 @@ app.get("/getClients", async (req, res) => {
     try {
         const uid = await authenticate();
 
-        object.methodCall("execute_kw", [db, uid, password, "res.partner", "search_read", [[], ['id', 'username', 'email']]], (err, value) => {
+        object.methodCall("execute_kw", [db, uid, password, "res.partner", "search_read", [[], ['id', 'name', 'email']]], (err, value) => {
             if (err) {
                 console.error("Error al obtener los clientes:", err);
                 res.status(500).json({ error: "Error al obtener los clientes" });
@@ -74,7 +80,7 @@ app.get("/getClient/:id", async (req, res) => {
         const uid = await authenticate();
         const id = parseInt(req.params.id);
 
-        object.methodCall("execute_kw", [db, uid, password, "res.partner", "search_read", [[["id", "=", id]], ['id', 'username', 'email']]], (err, value) => {
+        object.methodCall("execute_kw", [db, uid, password, "res.partner", "search_read", [[["id", "=", id]], ['id', 'name', 'email']]], (err, value) => {
             if (err) {
                 console.error("Error al obtener el cliente:", err);
                 res.status(500).json({ error: "Error al obtener el cliente" });
@@ -95,9 +101,19 @@ app.get("/getClient/:id", async (req, res) => {
 app.post("/createProduct", async (req, res) => {
     try {
         const uid = await authenticate();
+        console.log("Datos recibidos en la API:", req.body);
+        // Agrega este log
         const { name, description, img, price } = req.body;
 
-        object.methodCall("execute_kw", [db, uid, password, "product.product", "create", [{ name, description, img, price }]], (err, value) => {
+        if (!name || !price) {
+            return res.status(400).json({ error: "Nombre y precio son obligatorios" });
+        }
+
+        if (!img.startsWith("/9j/") && !img.startsWith("iVBORw0K")) {
+            return res.status(400).json({ error: "La imagen debe estar en formato base64" });
+        }
+
+        object.methodCall("execute_kw", [db, uid, password, "product.product", "create", [{ name, description_sale: description, image_1920: img, list_price: parseFloat(price) }]], (err, value) => {
             if (err) {
                 console.error("Error al crear el producto:", err);
                 res.status(500).json({ error: "Error al crear el producto" });
@@ -113,11 +129,13 @@ app.post("/createProduct", async (req, res) => {
 
 });
 
-app.get("/getProducts ", async (req, res) => {
+app.get("/getProducts", async (req, res) => {
     try {
         const uid = await authenticate();
 
-        object.methodCall("execute_kw", [db, uid, password, "product.product", "search_read", [[], ['id', 'name', 'description', 'img', 'price']]], (err, value) => {
+        object.methodCall("execute_kw", [db, uid, password, "product.product", "search_read",
+            [[], ['id', 'name', 'description_sale', 'image_1920', 'list_price']]
+        ], (err, value) => {
             if (err) {
                 console.error("Error al obtener los productos:", err);
                 res.status(500).json({ error: "Error al obtener los productos" });
@@ -129,7 +147,6 @@ app.get("/getProducts ", async (req, res) => {
     } catch (error) {
         console.error("Error al obtener los productos:", error);
         res.status(500).json({ error: "Error al obtener los productos" });
-
     }
 });
 
@@ -138,79 +155,178 @@ app.get("/getProduct/:id", async (req, res) => {
         const uid = await authenticate();
         const id = parseInt(req.params.id);
 
-        object.methodCall("execute_kw", [db, uid, password, "product.product", "search_read", [[["id", "=", id]], ['id', 'name', 'description', 'img', 'price']], 0, 1], (err, value) => {
+        object.methodCall("execute_kw", [db, uid, password, "product.product", "search_read",
+            [[["id", "=", id]], ['id', 'name', 'description_sale', 'image_1920', 'list_price'], { limit: 1 }]
+        ], (err, value) => {
             if (err) {
                 console.error("Error al obtener el producto:", err);
                 res.status(500).json({ error: "Error al obtener el producto" });
             } else {
-                res.status(200).json(value);
+                res.status(200).json(value.length ? value[0] : { error: "Producto no encontrado" });
             }
         });
 
     } catch (error) {
         console.error("Error al obtener el producto:", error);
         res.status(500).json({ error: "Error al obtener el producto" });
-
     }
 });
 
-app.post("/createSaleOrder", async (req, res) => {
-    try {
-        const uid = await authenticate();
-        const { partner_id, product_id, quantity, price } = req.body;
+// app.post("/createSaleOrder", async (req, res) => {
+//     try {
+//         const uid = await authenticate();
+//         const { partner_id, product_id, quantity, price } = req.body;
 
-        const params = {
-            partner_id,
-            order_line: [[0, 0, { product_id, product_uom_qty: quantity, price_unit: price }]]
-        };
+//         const params = {
+//             partner_id,
+//             order_line: [[0, 0, { product_id, product_uom_qty: quantity, price_unit: price }]]
+//         };
 
-        object.methodCall(
-            "execute_kw",
-            [db, uid, password, "sale.order", "create", [params]],
-            (err, orderId) => {
-                if (err) return res.status(500).json({ error: "Error al crear la orden de venta" });
-                res.json({ orderId });
-            }
-        )
+//         object.methodCall(
+//             "execute_kw",
+//             [db, uid, password, "sale.order", "create", [params]],
+//             async (err, orderId) => {
+//                 if (err) return res.status(500).json({ error: "Error al crear la orden de venta" });
 
-    } catch (error) {
-        console.error("Error al crear la orden de venta:", error);
-        res.status(500).json({ error: "Error al crear la orden de venta" });
+//                 // ✅ Confirmar la orden de venta para que se genere la factura
+//                 object.methodCall(
+//                     "execute_kw",
+//                     [db, uid, password, "sale.order", "action_confirm", [[orderId]]],
+//                     async (err, result) => {
+//                         if (err) return res.status(500).json({ error: "Error al confirmar la orden" });
 
-    }
-});
+//                         // ✅ Obtener el ID de la factura generada
+//                         object.methodCall(
+//                             "execute_kw",
+//                             [db, uid, password, "account.move", "search", [[["invoice_origin", "=", `SO${orderId}`]]]],
+//                             async (err, invoiceIds) => {
+//                                 if (err || invoiceIds.length === 0) {
+//                                     return res.status(500).json({ error: "No se encontró la factura generada" });
+//                                 }
+
+//                                 const invoiceId = invoiceIds[0];
+
+//                                 // ✅ Descargar el PDF de la factura
+//                                 object.methodCall(
+//                                     "execute_kw",
+//                                     [db, uid, password, "ir.actions.report", "get_pdf", [[invoiceId], "account.report_invoice"]],
+//                                     async (err, pdfBase64) => {
+//                                         if (err) return res.status(500).json({ error: "Error al generar el PDF" });
+
+//                                         const invoicePath = path.join(__dirname, "odoo/invoices", `invoice_${invoiceId}.pdf`);
+
+//                                         // ✅ Guardar el PDF en el servidor
+//                                         fs.writeFile(invoicePath, pdfBase64, "base64", (err) => {
+//                                             if (err) return res.status(500).json({ error: "Error al guardar el PDF" });
+//                                             res.json({ orderId, invoiceId, pdfPath: invoicePath });
+//                                         });
+//                                     }
+//                                 );
+//                             }
+//                         );
+//                     }
+//                 );
+//             }
+//         );
+
+//     } catch (error) {
+//         console.error("Error al crear la orden de venta:", error);
+//         res.status(500).json({ error: "Error al crear la orden de venta" });
+//     }
+// });
+
+// app.post("/createSaleOrder", async (req, res) => {
+//     try {
+//         const uid = await authenticate();
+//         if (!uid) throw new Error("Error de autenticación");
+
+//         const { partner_id, product_id, quantity, price } = req.body;
+
+//         if (!partner_id || !product_id || !quantity || !price) {
+//             return res.status(400).json({ error: "Todos los campos son obligatorios" });
+//         }
+
+//         const params = {
+//             partner_id,
+//             order_line: [
+//                 [
+//                     0, 0,
+//                     {
+//                         product_id,
+//                         product_uom_qty: quantity,
+//                         price_unit: price,
+//                         name: "Producto agregado automáticamente"
+//                     }
+//                 ]
+//             ]
+//         };
+
+//         object.methodCall(
+//             "execute_kw",
+//             [db, uid, password, "sale.order", "create", [params]],
+//             (err, orderId) => {
+//                 if (err) {
+//                     console.error("Error en la API de Odoo:", err);
+//                     return res.status(500).json({ error: err.faultString || "Error al crear la orden de venta" });
+//                 }
+//                 res.json({ message: "Orden creada con éxito", orderId });
+//             }
+//         );
+
+//     } catch (error) {
+//         console.error("Error al crear la orden de venta:", error);
+//         res.status(500).json({ error: error.message || "Error al crear la orden de venta" });
+//     }
+// });
 
 app.get("/getSaleOrders", async (req, res) => {
     try {
         const uid = await authenticate();
+        if (!uid) throw new Error("Error de autenticación");
 
-        object.methodCall("execute_kw", [db, uid, password, "sale.order", "search_read", [[], ['id', 'partner_id', 'amount_total']], 0, 10], (err, orders) => {
-            if (err) return res.status(500).json({ error: err })
-            res.json(orders);
-        });
+        object.methodCall(
+            "execute_kw",
+            [db, uid, password, "sale.order", "search_read", [[], ['id', 'partner_id', 'amount_total']], { limit: 10 }],
+            (err, orders) => {
+                if (err) {
+                    console.error("Error en la API de Odoo:", err);
+                    return res.status(500).json({ error: err.faultString || "Error al obtener las órdenes de venta" });
+                }
+                res.json(orders);
+            }
+        );
 
     } catch (error) {
-        console.error("Error al obtener las ordenes de venta:", error);
-        res.status(500).json({ error: "Error al obtener las ordenes de venta" });
-
+        console.error("Error al obtener las órdenes de venta:", error);
+        res.status(500).json({ error: error.message || "Error al obtener las órdenes de venta" });
     }
 });
 
 app.get("/getSaleOrder/:id", async (req, res) => {
     try {
         const uid = await authenticate();
+        if (!uid) throw new Error("Error de autenticación");
+
         const orderId = parseInt(req.params.id);
+        if (isNaN(orderId)) {
+            return res.status(400).json({ error: "ID de orden inválido" });
+        }
 
         object.methodCall(
             "execute_kw",
             [db, uid, password, "sale.order", "read", [[orderId], ["id", "name", "partner_id", "amount_total"]]],
             (err, order) => {
-                if (err) return res.status(500).json({ error: err });
+                if (err) {
+                    console.error("Error en la API de Odoo:", err);
+                    return res.status(500).json({ error: err.faultString || "Error al obtener la orden de venta" });
+                }
                 res.json(order);
             }
-        )
-    } catch (error) {
+        );
 
+    } catch (error) {
+        console.error("Error al obtener la orden de venta:", error);
+        res.status(500).json({ error: error.message || "Error al obtener la orden de venta" });
     }
 });
 
