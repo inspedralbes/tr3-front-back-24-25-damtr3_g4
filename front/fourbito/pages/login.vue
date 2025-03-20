@@ -47,6 +47,7 @@
 
 <script>
 import { useAuthStore } from '~/stores/auth';
+import { login as loginService } from '~/services/communicationManager';
 
 export default {
     data() {
@@ -58,7 +59,7 @@ export default {
         };
     },
     methods: {
-        login() {
+        async login() {
             this.errorMessage = '';
             this.successMessage = '';
 
@@ -72,13 +73,14 @@ export default {
                 return;
             }
 
-            if (this.email === 'usuari@example.com' && this.password === 'contrasenya') {
+            try {
+                const response = await loginService(this.email, this.password);
                 this.successMessage = 'Sessió iniciada correctament!';
                 const authStore = useAuthStore();
                 authStore.login();
                 this.$router.push('/admin');
-            } else {
-                this.errorMessage = 'Correu electrònic o contrasenya incorrectes.';
+            } catch (error) {
+                this.errorMessage = error.message || 'Correu electrònic o contrasenya incorrectes.';
             }
         },
         validateEmail(email) {
