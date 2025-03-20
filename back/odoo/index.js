@@ -172,68 +172,7 @@ app.get("/getProduct/:id", async (req, res) => {
     }
 });
 
-// app.post("/createSaleOrder", async (req, res) => {
-//     try {
-//         const uid = await authenticate();
-//         const { partner_id, product_id, quantity, price } = req.body;
 
-//         const params = {
-//             partner_id,
-//             order_line: [[0, 0, { product_id, product_uom_qty: quantity, price_unit: price }]]
-//         };
-
-//         object.methodCall(
-//             "execute_kw",
-//             [db, uid, password, "sale.order", "create", [params]],
-//             async (err, orderId) => {
-//                 if (err) return res.status(500).json({ error: "Error al crear la orden de venta" });
-
-//                 // ✅ Confirmar la orden de venta para que se genere la factura
-//                 object.methodCall(
-//                     "execute_kw",
-//                     [db, uid, password, "sale.order", "action_confirm", [[orderId]]],
-//                     async (err, result) => {
-//                         if (err) return res.status(500).json({ error: "Error al confirmar la orden" });
-
-//                         // ✅ Obtener el ID de la factura generada
-//                         object.methodCall(
-//                             "execute_kw",
-//                             [db, uid, password, "account.move", "search", [[["invoice_origin", "=", `SO${orderId}`]]]],
-//                             async (err, invoiceIds) => {
-//                                 if (err || invoiceIds.length === 0) {
-//                                     return res.status(500).json({ error: "No se encontró la factura generada" });
-//                                 }
-
-//                                 const invoiceId = invoiceIds[0];
-
-//                                 // ✅ Descargar el PDF de la factura
-//                                 object.methodCall(
-//                                     "execute_kw",
-//                                     [db, uid, password, "ir.actions.report", "get_pdf", [[invoiceId], "account.report_invoice"]],
-//                                     async (err, pdfBase64) => {
-//                                         if (err) return res.status(500).json({ error: "Error al generar el PDF" });
-
-//                                         const invoicePath = path.join(__dirname, "odoo/invoices", `invoice_${invoiceId}.pdf`);
-
-//                                         // ✅ Guardar el PDF en el servidor
-//                                         fs.writeFile(invoicePath, pdfBase64, "base64", (err) => {
-//                                             if (err) return res.status(500).json({ error: "Error al guardar el PDF" });
-//                                             res.json({ orderId, invoiceId, pdfPath: invoicePath });
-//                                         });
-//                                     }
-//                                 );
-//                             }
-//                         );
-//                     }
-//                 );
-//             }
-//         );
-
-//     } catch (error) {
-//         console.error("Error al crear la orden de venta:", error);
-//         res.status(500).json({ error: "Error al crear la orden de venta" });
-//     }
-// });
 
 app.post("/createSaleOrder", async (req, res) => {
     try {
