@@ -18,8 +18,8 @@ syncDatabase().then(() => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-        console.log("username", username, "email", email, "password", password);
+        const { name, email, password } = req.body;
+        console.log("name", name, "email", email, "password", password);
 
         const existingUser = await Usuaris.findOne({
             where: {
@@ -35,7 +35,7 @@ app.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = await Usuaris.create({
-            username,
+            name,
             email,
             password: hashedPassword,
         });
