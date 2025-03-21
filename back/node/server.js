@@ -19,7 +19,7 @@ syncDatabase().then(() => {
 app.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        console.log("name", username, "email", email, "password", password);
+        console.log("username", username, "email", email, "password", password);
 
         const existingUser = await Usuaris.findOne({
             where: {
