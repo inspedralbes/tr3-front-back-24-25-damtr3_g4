@@ -1,7 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-import { Usuaris, syncDatabase, Settings } from './models/index.js';
+import { Usuaris, Player, Teams, TeamPlayers, syncDatabase, Settings } from './models/index.js';
+import fileUpload from 'express-fileupload';
+import path from 'path';
+import fs from 'fs';
 
 const app = express();
 const PORT = process.env.NODE_PORT || 4000;
@@ -9,6 +12,7 @@ const PORT = process.env.NODE_PORT || 4000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
+app.use(fileUpload());
 
 syncDatabase().then(() => {
     console.log('Database synchronized');
@@ -158,6 +162,203 @@ app.delete('/users/:id', async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar el usuario:', error);
         res.status(500).json({ error: 'Error al eliminar el usuario' });
+    }
+});
+
+app.post('/player', async (req, res) => {
+    try {
+
+        //verificar si se envió la imagen
+        if (!req.files || !req.files.img) {
+            return res.status(400).json({ error: 'Imagen no encontrada' });
+        }
+
+        //Obtener de la request
+        const { img } = req.files;
+        const { name } = req.body;
+
+        //Validar name
+        if (!name) return res.status(400).json({ error: 'El Nombre del jugador es obligatorio' });
+
+        //Crear directorio uploads/players
+        const uploadDir = path.join('uploads', 'players');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        //Mover la imagen al directorio
+        const imgName = `${Date.now()}_${img.name}`;
+        const imgPath = path.join(uploadDir, imgName);
+
+        await img.mv(imgPath);
+
+        //Crear el jugador
+        const newPlayer = await Player.create({
+            name,
+            img: imgName
+        });
+
+        res.status(200).json({ message: "Jugador creado correctamente", player: newPlayer });
+    } catch (error) {
+        console.error('Error al crear el jugador:', error);
+        res.status(500).json({ error: 'Error al crear el jugador' });
+    }
+
+});
+
+app.get('/players', async (req, res) => {
+    try {
+        const players = await Player.findAll();
+        res.json(players);
+    } catch (error) {
+        console.error('Error al obtener los jugadores:', error);
+        res.status(500).json({ error: 'Error al obtener los jugadores' });
+    }
+});
+
+app.get('/players/:id', async (req, res) => {
+    try {
+        const player = await Player.findByPk(req.params.id);
+
+        if (!player) {
+            return res.status(404).json({ error: 'Jugador no encontrado' });
+        }
+
+        res.json(player);
+    } catch (error) {
+        console.error('Error al obtener el jugador:', error);
+        res.status(500).json({ error: 'Error al obtener el jugador' });
+    }
+});
+
+app.delete('/players/:id', async (req, res) => {
+    try {
+        const player = await Player.findByPk(req.params.id);
+
+        if (!player) {
+            return res.status(404).json({ error: 'Jugador no encontrado' });
+        }
+
+        await player.destroy();
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error al eliminar el jugador:', error);
+        res.status(500).json({ error: 'Error al eliminar el jugador' });
+    }
+});
+
+app.post('/teams', async (req, res) => {
+
+    try {
+        const { id_user, name } = req.body;
+
+        console.log("id_user", id_user, "name", name);
+        //validar datos
+        if (!id_user) {
+            return res.status(400).json({ error: 'Datos incompletos' });
+        }
+
+        //verificar si el usuario existe
+        console.log("hola");
+        const user = await Usuaris.findByPk(id_user);
+        console.log("user", user);
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        //crear el equipo
+        const newTeam = await Teams.create({
+            id_user,
+            name
+        });
+
+        res.status(200).json({ message: "Equipo creado correctamente", team: newTeam });
+    } catch (error) {
+        console.error('Error al crear el equipo:', error);
+        res.status(500).json({ error: 'Error al crear el equipo' });
+    }
+});
+
+app.get('/teams', async (req, res) => {
+    try {
+        const teams = await Teams.findAll();
+        res.json(teams);
+    } catch (error) {
+        console.error('Error al obtener los equipos:', error);
+        res.status(500).json({ error: 'Error al obtener los equipos' });
+    }
+});
+
+app.get('/teams/:id', async (req, res) => {
+    try {
+        const team = await Teams.findByPk(req.params.id);
+
+        if (!team) {
+            return res.status(404).json({ error: 'Equipo no encontrado' });
+        }
+
+        res.json(team);
+    } catch (error) {
+        console.error('Error al obtener el equipo:', error);
+        res.status(500).json({ error: 'Error al obtener el equipo' });
+    }
+});
+
+app.post('/playersInTeam', async (req, res) => {
+    try {
+        const { id_team, players } = req.body;
+        console.log("id_team", id_team, "players", players);
+        if (!id_team || !Array.isArray(players) || players.length === 0) {
+            return res.status(400).json({ error: 'Datos incompletos' });
+        }
+
+        // Verificar si el equipo existe
+        const team = await Teams.findByPk(id_team);
+        console.log("team", team);
+        if (!team) return res.status(404).json({ error: 'Equipo no encontrado' });
+
+        // Verificar si los jugadores existen en la tabla de Players
+        const validPlayers = await Player.findAll({ where: { id: players } });
+        console.log("validPlayers", validPlayers);
+
+        if (validPlayers.length !== players.length) {
+            return res.status(400).json({ error: 'Uno o más jugadores no existen' });
+        }
+
+        // Crear registros en la tabla team_players
+        const teamPlayers = players.map((id_player) => ({
+            id_team,
+            id_player,
+        }));
+
+        await TeamPlayers.bulkCreate(teamPlayers);
+
+        res.status(201).json({ message: "Jugadores asignados correctamente", teamPlayers });
+
+    } catch (error) {
+        console.error('Error al añadir jugadores al equipo:', error);
+        res.status(500).json({ error: 'Error al añadir jugador al equipo' });
+    }
+});
+
+app.get('/playerInTeam/:id_team', async (req, res) => {
+    try {
+        const { id_team } = req.params;
+        console.log("id_team", id_team);
+
+        const players = await TeamPlayers.findAll({
+            where: { id_team },
+            include: [
+                {
+                    model: Player,
+                    attributes: ['id', 'name', 'img'],
+                }
+            ]
+        });
+
+        res.json(players);
+    } catch (error) {
+        console.error('Error al cargar jugadores del equipo:', error);
+        res.status(500).json({ error: 'Error al cargar jugadores del equipo' });
     }
 });
 

@@ -7,6 +7,10 @@ const defPlayer = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
+        name: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+        },
         img: {
             type: DataTypes.STRING(255),
             allowNull: false,

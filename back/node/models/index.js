@@ -6,6 +6,7 @@ import defInventory from '../models/Inventory.js';
 import defShop from '../models/Shop.js';
 import defPlayer from '../models/Player.js';
 import defSettings from '../models/Settings.js';
+import defTeamPlayers from '../models/TeamPlayers.js';
 import loadInitialData from '../scripts/loadInitialData.js';
 
 // Inicializar modelos
@@ -16,6 +17,7 @@ const Inventory = defInventory(sequelize);
 const Shop = defShop(sequelize);
 const Player = defPlayer(sequelize);
 const Settings = defSettings(sequelize);
+const TeamPlayers = defTeamPlayers(sequelize);
 
 // Definir relaciones correctamente
 
@@ -39,6 +41,15 @@ Player.belongsTo(Usuaris, { foreignKey: 'id_user', onDelete: 'CASCADE' });
 Inventory.belongsTo(Shop, { foreignKey: 'id_item', onDelete: 'CASCADE' });
 Shop.hasMany(Inventory, { foreignKey: 'id_item', onDelete: 'CASCADE' });
 
+Teams.belongsToMany(Player, { through: TeamPlayers, foreignKey: 'id_team' });
+Player.belongsToMany(Teams, { through: TeamPlayers, foreignKey: 'id_player' });
+
+TeamPlayers.belongsTo(Player, { foreignKey: 'id_player', onDelete: 'CASCADE' });
+Player.hasMany(TeamPlayers, { foreignKey: 'id_player', onDelete: 'CASCADE' });
+
+TeamPlayers.belongsTo(Teams, { foreignKey: 'id_team', onDelete: 'CASCADE' });
+Teams.hasMany(TeamPlayers, { foreignKey: 'id_team', onDelete: 'CASCADE' });
+
 // Sincronizar la base de datos
 const syncDatabase = async () => {
     try {
@@ -59,5 +70,6 @@ export {
     Shop,
     Player,
     Settings,
+    TeamPlayers,
     syncDatabase
 };

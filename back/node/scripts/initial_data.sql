@@ -42,3 +42,9 @@ INSERT INTO players (id, img) VALUES
 
 INSERT INTO settings (id, matchDuration, goalsToWin, selectedPlayer) VALUES
 (1, 5, 5, 3);
+
+INSERT INTO team_players (id, id_team, id_player) VALUES
+(1, 1, 1),
+(2, 1, 2),
+(3, 1, 3),
+(4, 2, 3);
