@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 
-const Team = (sequelize) => {
+const defTeam = (sequelize) => {
     return sequelize.define('teams', {
         id: {
             type: DataTypes.INTEGER,
@@ -17,4 +17,4 @@ const Team = (sequelize) => {
     });
 };
 
-export default Team;
+export default defTeam;
