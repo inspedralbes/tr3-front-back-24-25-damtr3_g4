@@ -38,6 +38,7 @@ app.post("/createClient", async (req, res) => {
     try {
         const uid = await authenticate();
         const { name, email } = req.body;
+        console.log("Datos recibidos en la API:", req.body);
 
         object.methodCall("execute_kw", [db, uid, password, "res.partner", "create", [{ name, email, customer_rank: 1 }]], (err, value) => {
             if (err) {
