@@ -1,19 +1,20 @@
 import { DataTypes } from "sequelize";
-import sequelize from '../config/database.js';
 
-const Team = sequelize.define('Teams', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
-    }
-}, {
-    tableName: 'teams',
-    timestamps: false
-});
+const Team = (sequelize) => {
+    return sequelize.define('teams', {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false
+        }
+    }, {
+        tableName: 'teams',
+        timestamps: false
+    });
+};
 
 export default Team;

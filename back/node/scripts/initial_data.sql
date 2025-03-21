@@ -40,5 +40,5 @@ INSERT INTO players (id, img) VALUES
 (3, 'player3.png'),
 (4, 'player4.png');
 
-INSERT INTO Settings (id, matchDuration, goalsToWin, selectedPlayer) VALUES
-(1, 10, 5, 1);
+INSERT INTO settings (id, matchDuration, goalsToWin, selectedPlayer) VALUES
+(1, 5, 5, 3);

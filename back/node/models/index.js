@@ -5,8 +5,8 @@ import defTeams from '../models/Teams.js';
 import defInventory from '../models/Inventory.js';
 import defShop from '../models/Shop.js';
 import defPlayer from '../models/Player.js';
-import loadInitialData from '../scripts/loadInitialData.js';
 import defSettings from '../models/Settings.js';
+import loadInitialData from '../scripts/loadInitialData.js';
 
 // Inicializar modelos
 const Usuaris = defUsuaris(sequelize);
