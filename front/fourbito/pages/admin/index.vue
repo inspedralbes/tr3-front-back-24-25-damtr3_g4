@@ -52,9 +52,9 @@ export default {
             goalsToWin: 3,
             selectedPlayer: null,
             players: [
-                { id: 1, name: '3 Jugadors' },
-                { id: 2, name: '4 Jugadors' },
-                { id: 3, name: '5 Jugadors' },
+                { id: 3, name: '3 Jugadors' },
+                { id: 4, name: '4 Jugadors' },
+                { id: 5, name: '5 Jugadors' },
             ],
             successMessage: '',
             errorMessage: '',
@@ -85,6 +85,8 @@ export default {
                     goalsToWin: this.goalsToWin,
                     selectedPlayer: this.selectedPlayer
                 };
+
+                console.log('Saving config:', config); // Agrega este log para verificar los datos
 
                 const data = await saveMatchConfig(config);
 

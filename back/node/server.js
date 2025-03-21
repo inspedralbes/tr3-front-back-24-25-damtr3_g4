@@ -74,6 +74,7 @@ app.post('/login', async (req, res) => {
 app.post('/saveMatchConfig', async (req, res) => {
     try {
         const { matchDuration, goalsToWin, selectedPlayer } = req.body;
+        console.log('Received config:', req.body);
 
         const [settings, created] = await Settings.upsert({
             id: 1,

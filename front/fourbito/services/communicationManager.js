@@ -24,6 +24,7 @@ export async function saveMatchConfig(config) {
 
 export async function getMatchConfig() {
     try {
+        console.log('URL:', URL);
         const response = await fetch(`${URL}/getMatchConfig`, {
             method: 'GET',
             headers: {
