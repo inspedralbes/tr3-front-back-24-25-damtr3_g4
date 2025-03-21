@@ -35,10 +35,25 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        const clientResponse = await fetch("http://host.docker.internal:4002/createClient", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: username, email }),
+        });
+
+        const clientData = await clientResponse.json();
+
+        if (!clientResponse.ok) throw new Error(clientData.error || "Error al crear el cliente en odoo");
+
+        const odooClientId = clientData.id;
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = await Usuaris.create({
+            id: odooClientId,
             username,
             email,
             password: hashedPassword,
