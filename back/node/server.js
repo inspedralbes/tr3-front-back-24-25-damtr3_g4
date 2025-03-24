@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-import { Usuaris, Player, Teams, TeamPlayers, Shop, syncDatabase, Settings, Inventory } from './models/index.js';
+import { Usuaris, Player, Teams, TeamPlayers, Game, Shop, syncDatabase, Settings, Inventory } from './models/index.js';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
@@ -19,6 +19,8 @@ syncDatabase().then(() => {
 }).catch((error) => {
     console.error('Error starting server:', error);
 });
+
+
 
 app.post('/register', async (req, res) => {
     try {
@@ -472,11 +474,93 @@ app.post('/users/remove-coins', async (req, res) => {
     }
 
     try {
+        const user = await Usuaris.findByPk(userId);
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        if (user.coins >= coins) user.coins -= coins;
+
+        await user.save();
+        res.json({ message: 'Monedas restadas correctamente', user });
 
     } catch (error) {
         console.error('Error al restar monedas:', error);
         res.status(500).json({ error: 'Error al restar monedas' });
+    }
+});
 
+app.post('/users/win-game', async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+        const user = await Usuaris.findByPk(userId);
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        user.coins += 200;
+        user.wins += 1;
+        await user.save();
+        res.json({ message: 'Juego ganado, monedas añadidas 200', user });
+
+    } catch (error) {
+        console.error('Error al añadir recompensa:', error);
+        res.status(500).json({ error: 'Error al añadir recompensa' });
+    }
+});
+
+app.post('/users/lose-game', async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+        const user = await Usuaris.findByPk(userId);
+
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        if (user.coins >= 50) {
+            user.coins -= 50;
+        }
+
+        user.losses += 1;
+        await user.save();
+        res.json({ message: 'Juego perdido, monedas restadas 50', user });
+
+    } catch (error) {
+        console.error('Error al añadir penalización:', error);
+        res.status(500).json({ error: 'Error al añadir penalización' });
+
+    }
+});
+
+app.post('/save-result', async (req, res) => {
+    const { id_user1, id_user2, id_team1, id_team2, result } = req.body;
+
+    try {
+        if (!id_user1 || !id_user2 || !id_team1 || !id_team2 || !result) {
+            return res.status(400).json({ error: 'Datos incompletos' });
+        }
+
+        const newGame = await Game.create({
+            id_user1,
+            id_user2,
+            id_team1,
+            id_team2,
+            result
+        })
+
+        return res.status(200).json({ message: 'Resultado guardado correctamente', game: newGame });
+
+    } catch (error) {
+        console.error('Error al guardar el resultado:', error);
+        res.status(500).json({ error: 'Error al guardar el resultado' });
+
+    }
+})
+
+app.get('/games', async (req, res) => {
+    try {
+        const games = await Game.findAll();
+        res.json(games);
+    } catch (error) {
+        console.error('Error al obtener los juegos:', error);
+        res.status(500).json({ error: 'Error al obtener los juegos' });
     }
 });
 

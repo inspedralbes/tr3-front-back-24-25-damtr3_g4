@@ -33,7 +33,12 @@ const defUsuaris = (sequelize) => {
             allowNull: false,
             defaultValue: 200,
         },
-        penalty_coins: {
+        wins: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+        },
+        losses: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,
