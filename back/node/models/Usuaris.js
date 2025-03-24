@@ -28,13 +28,15 @@ const defUsuaris = (sequelize) => {
                 key: 'id'
             }
         },
-        id_inventory: {
+        coins: {
             type: DataTypes.INTEGER,
-            allowNull: true,
-            references: {
-                model: 'inventory',
-                key: 'id'
-            }
+            allowNull: false,
+            defaultValue: 200,
+        },
+        penalty_coins: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
         },
     }, {
         tableName: 'users',

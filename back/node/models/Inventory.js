@@ -10,6 +10,10 @@ const defInventory = (sequelize) => {
         id_user: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            references: {
+                model: 'users',
+                key: 'id'
+            }
         },
         id_item: {
             type: DataTypes.INTEGER,
@@ -22,6 +26,7 @@ const defInventory = (sequelize) => {
         quantity: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            defaultValue: 1,
         },
     }, {
         tableName: 'inventory',

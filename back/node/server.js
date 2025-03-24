@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bcrypt from 'bcryptjs';
-import { Usuaris, Player, Teams, TeamPlayers, syncDatabase, Settings } from './models/index.js';
+import { Usuaris, Player, Teams, TeamPlayers, Shop, syncDatabase, Settings, Inventory } from './models/index.js';
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
@@ -359,6 +359,124 @@ app.get('/playerInTeam/:id_team', async (req, res) => {
     } catch (error) {
         console.error('Error al cargar jugadores del equipo:', error);
         res.status(500).json({ error: 'Error al cargar jugadores del equipo' });
+    }
+});
+
+app.get('/shopItems', async (req, res) => {
+    try {
+        const items = await Shop.findAll();
+        res.json(items);
+    } catch (error) {
+        console.error('Error al obtener los objetos de la tienda:', error);
+        res.status(500).json({ error: 'Error al obtener los objetos de la tienda' });
+    }
+});
+
+app.post('/shop/buy', async (req, res) => {
+    const { userId, itemId, quantity } = req.body;
+
+    console.log('Tipo de dato de cantidad:', typeof quantity);
+    if (quantity < 1 || quantity > 3) {
+        return res.status(400).json({ error: 'Cantidad no permitida' });
+    }
+
+
+    try {
+        const user = await Usuaris.findByPk(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const item = await Shop.findByPk(itemId);
+        if (!item) {
+            return res.status(404).json({ error: 'Objeto no encontrado' });
+        }
+
+        const totalPrice = item.price * quantity;
+        if (user.coins < totalPrice) {
+            return res.status(400).json({ error: 'No tienes suficientes monedas' });
+        }
+
+        user.coins -= totalPrice;
+        await user.save();
+
+        const [inventoryItem, created] = await Inventory.findOrCreate({
+            where: { id_user: userId, id_item: itemId },
+            defaults: { quantity }
+        });
+
+        if (!created) {
+            inventoryItem.quantity += quantity;
+            await inventoryItem.save();
+        }
+
+        res.json({ message: 'Objeto comprado correctamente', user, inventoryItem });
+
+    } catch (error) {
+        console.error('Error al comprar un objeto de la tienda:', error);
+        res.status(500).json({ error: 'Error al comprar un objeto de la tienda' });
+
+    }
+});
+
+app.get('/inventory/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const inventory = await Inventory.findAll({
+            where: { id_user: userId },
+            include: [{ model: Shop, as: 'shop', attributes: ['name', 'price'] }]
+        });
+        res.json(inventory);
+
+    } catch (error) {
+        console.error('Error al obtener el inventario:', error);
+        res.status(500).json({ error: 'Error al obtener el inventario' });
+    }
+});
+
+app.post('/users/add-coins', async (req, res) => {
+    const { userId, coins } = req.body;
+
+    if (!Number.isInteger(coins) || coins <= 0) {
+        return res.status(400).json({ error: 'Cantidad de monedas no válida' });
+    }
+
+    try {
+        const user = await Usuaris.findByPk(userId);
+
+        if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        user.coins += coins;
+
+        // Si el usuario tiene penalización, restar la deuda acumulada
+        if (user.penalty_coins > 0) {
+            const penaltyToDeduct = Math.min(user.penalty_coins, user.coins);
+            user.coins -= penaltyToDeduct;
+            user.penalty_coins -= penaltyToDeduct;
+        }
+        await user.save();
+        res.json({ message: 'Monedas añadidas correctamente', user });
+
+    } catch (error) {
+        console.error('Error al añadir monedas:', error);
+        res.status(500).json({ error: 'Error al añadir monedas' });
+
+    }
+});
+
+app.post('/users/remove-coins', async (req, res) => {
+    const { userId, coins } = req.body;
+
+    if (!Number.isInteger(coins) || coins <= 0) {
+        return res.status(400).json({ error: 'Cantidad de monedas no válida' });
+    }
+
+    try {
+
+    } catch (error) {
+        console.error('Error al restar monedas:', error);
+        res.status(500).json({ error: 'Error al restar monedas' });
+
     }
 });
 

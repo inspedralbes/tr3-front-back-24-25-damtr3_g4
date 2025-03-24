@@ -26,8 +26,8 @@ Usuaris.belongsTo(Teams, { foreignKey: 'id_team', onDelete: 'SET NULL' });
 Teams.hasMany(Usuaris, { foreignKey: 'id_team', onDelete: 'SET NULL' });
 
 // Un usuario tiene un inventario
-Usuaris.belongsTo(Inventory, { foreignKey: 'id_inventory', onDelete: 'CASCADE' });
-Inventory.hasOne(Usuaris, { foreignKey: 'id_inventory', onDelete: 'CASCADE' });
+Usuaris.hasMany(Inventory, { foreignKey: 'id_user', onDelete: 'CASCADE' });
+Inventory.belongsTo(Usuaris, { foreignKey: 'id_user', onDelete: 'CASCADE' });
 
 // Un jugador pertenece a una partida
 Player.belongsTo(Game, { foreignKey: 'id_game', onDelete: 'CASCADE' });
@@ -41,12 +41,15 @@ Player.belongsTo(Usuaris, { foreignKey: 'id_user', onDelete: 'CASCADE' });
 Inventory.belongsTo(Shop, { foreignKey: 'id_item', onDelete: 'CASCADE' });
 Shop.hasMany(Inventory, { foreignKey: 'id_item', onDelete: 'CASCADE' });
 
-Teams.belongsToMany(Player, { through: TeamPlayers, foreignKey: 'id_team' });
-Player.belongsToMany(Teams, { through: TeamPlayers, foreignKey: 'id_player' });
+// Relación de muchos a muchos entre equipos y jugadores
+Teams.belongsToMany(Player, { through: TeamPlayers, foreignKey: 'id_team', onDelete: 'CASCADE' });
+Player.belongsToMany(Teams, { through: TeamPlayers, foreignKey: 'id_player', onDelete: 'CASCADE' });
 
+// Relación entre TeamPlayers y Player
 TeamPlayers.belongsTo(Player, { foreignKey: 'id_player', onDelete: 'CASCADE' });
 Player.hasMany(TeamPlayers, { foreignKey: 'id_player', onDelete: 'CASCADE' });
 
+// Relación entre TeamPlayers y Teams
 TeamPlayers.belongsTo(Teams, { foreignKey: 'id_team', onDelete: 'CASCADE' });
 Teams.hasMany(TeamPlayers, { foreignKey: 'id_team', onDelete: 'CASCADE' });
 
