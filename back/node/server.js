@@ -412,6 +412,30 @@ app.post('/shop/buy', async (req, res) => {
             await inventoryItem.save();
         }
 
+        const saleOrderResponse = await fetch("http://host.docker.internal:4002/createSaleOrder", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                partner_id: user.id,
+                product_id: item.id,
+                quantity,
+                price: item.price
+            })
+        });
+
+        const saleOrderData = await saleOrderResponse.json();
+
+        if (!saleOrderResponse.ok) throw new Error(saleOrderData.error || "Error al crear la orden de venta en Odoo");
+
+        res.json({
+            message: 'Objeto comprado correctamente y orden de venta creada en Odoo',
+            user,
+            inventoryItem,
+            saleOrder: saleOrderData
+        });
+
         res.json({ message: 'Objeto comprado correctamente', user, inventoryItem });
 
     } catch (error) {
