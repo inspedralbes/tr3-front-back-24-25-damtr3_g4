@@ -266,7 +266,7 @@ app.post('/teams', async (req, res) => {
         if (!req.files || !req.files.badge) {
             return res.status(400).json({ error: 'Imagen no encontrada' });
         }
-        const { img } = req.files;
+        const { badge } = req.files;
         const { id_user, name } = req.body;
 
         console.log("id_user", id_user, "name", name);
@@ -274,6 +274,8 @@ app.post('/teams', async (req, res) => {
         if (!id_user) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
+
+        if (!name) return res.status(400).json({ error: 'El Nombre del equipo es obligatorio' });
 
         const user = await Usuaris.findByPk(id_user);
         console.log("user", user);
@@ -286,10 +288,10 @@ app.post('/teams', async (req, res) => {
                 { recursive: true });
         }
 
-        const badgeName = `${Date.now()}_${img.name}`;
+        const badgeName = `${Date.now()}_${badge.name}`;
         const badgePath = path.join(uploadDir, badgeName);
 
-        await img.mv(badgePath);
+        await badge.mv(badgePath);
 
         //crear el equipo
         const newTeam = await Teams.create({
