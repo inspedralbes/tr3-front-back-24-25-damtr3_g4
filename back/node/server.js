@@ -5,6 +5,7 @@ import { Usuaris, Player, Teams, TeamPlayers, Game, Shop, syncDatabase, Settings
 import fileUpload from 'express-fileupload';
 import path from 'path';
 import fs from 'fs';
+// import multer from 'multer';
 
 const app = express();
 const PORT = process.env.NODE_PORT || 4000;
@@ -20,10 +21,19 @@ syncDatabase().then(() => {
     console.error('Error starting server:', error);
 });
 
-
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, 'uploads/items');
+//     },
+//     filename: (req, file, cb) => {
+//         const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname);
+//         cb(null, uniqueName);
+//     }
+// });
 
 app.post('/register', async (req, res) => {
     try {
+
         const { username, email, password } = req.body;
         console.log("username", username, "email", email, "password", password);
 
@@ -361,6 +371,65 @@ app.get('/playerInTeam/:id_team', async (req, res) => {
     } catch (error) {
         console.error('Error al cargar jugadores del equipo:', error);
         res.status(500).json({ error: 'Error al cargar jugadores del equipo' });
+    }
+});
+
+app.post('/shop', async (req, res) => {
+    try {
+        if (!req.files || !req.files.img) {
+            return res.status(400).json({ error: 'Imagen no encontrada' });
+        }
+
+        const { img } = req.files;
+        const { name, description, price } = req.body;
+
+        if (!name || !price) {
+            return res.status(400).json({ error: 'Datos incompletos' });
+        }
+
+        const uploadDir = path.join('uploads', 'items');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        const imgName = `${Date.now()}_${img.name}`;
+        const imgPath = path.join(uploadDir, imgName);
+
+        await img.mv(imgPath);
+
+        const newItem = await Shop.create({
+            name,
+            description,
+            img: imgName,
+            price
+        });
+
+        const imgBuffer = fs.readFileSync(imgPath);
+        const imgBase64 = imgBuffer.toString('base64');
+
+        const odooResponse = await fetch("http://host.docker.internal:4002/createProduct", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                img: imgBase64,
+                price
+            })
+        });
+
+        const odooData = await odooResponse.json();
+
+        if (!odooResponse.ok) throw new Error(odooData.error || "Error al crear el producto en Odoo");
+
+        res.status(200).json({ message: "Objeto añadido correctamente", item: newItem, odoo: odooData });
+
+    } catch (error) {
+        console.error('Error al añadir objeto a la tienda:', error);
+        res.status(500).json({ error: 'Error al añadir objeto a la tienda' });
     }
 });
 
