@@ -75,7 +75,7 @@ export default {
                 return;
             }
             if (!this.selectedPlayer) {
-                this.errorMessage = 'Selecciona un jugador.';
+                this.errorMessage = 'Selecciona un numero de jugadors.';
                 this.hasSaved = true;
                 return;
             }
@@ -108,7 +108,6 @@ export default {
                 this.successMessage = '';
                 this.hasSaved = true;
             } catch (error) {
-                this.errorMessage = error.message;
                 this.hasSaved = true;
             }
         }
