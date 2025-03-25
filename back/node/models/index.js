@@ -56,7 +56,7 @@ Teams.hasMany(TeamPlayers, { foreignKey: 'id_team', onDelete: 'CASCADE' });
 // Sincronizar la base de datos
 const syncDatabase = async () => {
     try {
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ force: true })
         console.log('Database synchronized');
         await loadInitialData();
     } catch (error) {

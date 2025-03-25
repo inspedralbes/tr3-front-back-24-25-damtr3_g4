@@ -20,7 +20,11 @@ const defTeams = (sequelize) => {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
-        }
+        },
+        badge: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     }, {
         tableName: 'teams',
         timestamps: false,

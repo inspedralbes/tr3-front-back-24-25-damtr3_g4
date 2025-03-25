@@ -14,11 +14,11 @@ INSERT INTO users (id, username, email, password, coins) VALUES
 
 
 -- 4️⃣ Insert data into the 'teams' table (Depends on users and games)
-INSERT INTO teams (id, id_user, name) VALUES
-(1, 1, 'Team A'),
-(2, 2, 'Team B'),
-(3, 3, 'Team C'),
-(4, 4, 'Team D');
+INSERT INTO teams (id, id_user, name, badge) VALUES
+(1, 1, 'Team A', 'img_a.png'),
+(2, 2, 'Team B', 'img_b.png'),
+(3, 3, 'Team C', 'img_c.png'),
+(4, 4, 'Team D', 'img_d.png');
 
 INSERT INTO games (id, id_user1, id_user2, id_team1, id_team2, result) VALUES
 (1, 1, 2, 1, 2, '1-0'),

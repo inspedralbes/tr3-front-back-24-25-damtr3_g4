@@ -263,6 +263,10 @@ app.delete('/players/:id', async (req, res) => {
 app.post('/teams', async (req, res) => {
 
     try {
+        if (!req.files || !req.files.badge) {
+            return res.status(400).json({ error: 'Imagen no encontrada' });
+        }
+        const { img } = req.files;
         const { id_user, name } = req.body;
 
         console.log("id_user", id_user, "name", name);
@@ -271,16 +275,27 @@ app.post('/teams', async (req, res) => {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
 
-        //verificar si el usuario existe
-        console.log("hola");
         const user = await Usuaris.findByPk(id_user);
         console.log("user", user);
         if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
 
+        const uploadDir = path.join('uploads', 'teams');
+
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir,
+                { recursive: true });
+        }
+
+        const badgeName = `${Date.now()}_${img.name}`;
+        const badgePath = path.join(uploadDir, badgeName);
+
+        await img.mv(badgePath);
+
         //crear el equipo
         const newTeam = await Teams.create({
             id_user,
-            name
+            name,
+            badge: badgeName
         });
 
         res.status(200).json({ message: "Equipo creado correctamente", team: newTeam });
