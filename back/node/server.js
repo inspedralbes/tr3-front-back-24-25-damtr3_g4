@@ -10,10 +10,15 @@ import fs from 'fs';
 const app = express();
 const PORT = process.env.NODE_PORT || 4000;
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
-app.use(fileUpload());
+app.use('/uploads/items', express.static(path.join(__dirname, 'uploads', 'items')));
+app.use('/uploads/players', express.static(path.join(__dirname, 'uploads', 'players')));
+app.use('/uploads/teams', express.static(path.join(__dirname, 'uploads', 'teams')));
+
 
 syncDatabase().then(() => {
     console.log('Database synchronized');
