@@ -1,17 +1,4 @@
 -- 1️⃣ Insert data into the 'shop' table (Independent)
-INSERT INTO shop (id, name, description, img, price) VALUES
-(1, 'Camiseta', 'Camiseta legendaria', '1742892211575_camiseta_legendaria.jpg', 100),
-(2, 'Sudadera', 'Sudadera legendaria', '1742892743958_sudadera_legendaria.jpg', 200),
-(3, 'Item C', 'Description for Item C', 'img_c.png', 300),
-(4, 'Item D', 'Description for Item D', 'img_d.png', 400);
-
---  Insert data into the 'users' table (Independent)
-INSERT INTO users (id, username, email, password, coins) VALUES
-(1, 'user1', 'user1@example.com', 'password1', 0),
-(2, 'user2', 'user2@example.com', 'password2', 0),
-(3, 'user3', 'user3@example.com', 'password3', 0),
-(4, 'user4', 'user4@example.com', 'password4', 0);
-
 
 -- 4️⃣ Insert data into the 'teams' table (Depends on users and games)
 INSERT INTO teams (id, id_user, name, badge) VALUES

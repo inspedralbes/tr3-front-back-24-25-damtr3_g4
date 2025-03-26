@@ -14,6 +14,7 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(fileUpload());
 app.use(cors());
 app.use('/uploads/items', express.static(path.join(__dirname, 'uploads', 'items')));
 app.use('/uploads/players', express.static(path.join(__dirname, 'uploads', 'players')));
@@ -76,7 +77,7 @@ app.post('/register', async (req, res) => {
             password: hashedPassword,
         });
 
-        res.status(200).json({ message: "User registrado correctamente", user: newUser });
+        res.status(200).json({ message: "User registrado correctamente", user: newUser, odoo: clientData });
 
     } catch (error) {
         console.error('Error al registrar el usuario:', error);
@@ -420,16 +421,11 @@ app.post('/shop', async (req, res) => {
 
         await img.mv(imgPath);
 
-        const newItem = await Shop.create({
-            name,
-            description,
-            img: imgName,
-            price
-        });
-
+        // Obtener la imagen en formato base64 para enviarla a Odoo
         const imgBuffer = fs.readFileSync(imgPath);
         const imgBase64 = imgBuffer.toString('base64');
 
+        // Crear el producto en Odoo
         const odooResponse = await fetch("http://host.docker.internal:4002/createProduct", {
             method: "POST",
             headers: {
@@ -447,6 +443,17 @@ app.post('/shop', async (req, res) => {
 
         if (!odooResponse.ok) throw new Error(odooData.error || "Error al crear el producto en Odoo");
 
+        const odooProductId = odooData.id; // Asumiendo que el ID del producto creado en Odoo está en `odooData.id`
+
+        // Crear el producto en MySQL usando el ID de Odoo
+        const newItem = await Shop.create({
+            id: odooProductId, // Usamos el ID de Odoo directamente como el ID del producto
+            name,
+            description,
+            img: imgName,
+            price
+        });
+
         res.status(200).json({ message: "Objeto añadido correctamente", item: newItem, odoo: odooData });
 
     } catch (error) {
@@ -454,6 +461,7 @@ app.post('/shop', async (req, res) => {
         res.status(500).json({ error: 'Error al añadir objeto a la tienda' });
     }
 });
+
 
 app.get('/shopItems', async (req, res) => {
     try {
@@ -468,7 +476,7 @@ app.get('/shopItems', async (req, res) => {
 app.post('/shop/buy', async (req, res) => {
     const { userId, itemId, quantity } = req.body;
 
-    console.log('Tipo de dato de cantidad:', typeof quantity);
+    console.log("Datos recibidos: " + userId, itemId, quantity);
     if (quantity < 1 || quantity > 3) {
         return res.status(400).json({ error: 'Cantidad no permitida' });
     }
@@ -526,8 +534,6 @@ app.post('/shop/buy', async (req, res) => {
             inventoryItem,
             saleOrder: saleOrderData
         });
-
-        res.json({ message: 'Objeto comprado correctamente', user, inventoryItem });
 
     } catch (error) {
         console.error('Error al comprar un objeto de la tienda:', error);
