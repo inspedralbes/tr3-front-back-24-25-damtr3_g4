@@ -1,7 +1,7 @@
 -- 1️⃣ Insert data into the 'shop' table (Independent)
 INSERT INTO shop (id, name, description, img, price) VALUES
-(1, 'Item A', 'Description for Item A', 'img_a.png', 100),
-(2, 'Item B', 'Description for Item B', 'img_b.png', 200),
+(1, 'Camiseta', 'Camiseta legendaria', '1742892211575_camiseta_legendaria.jpg', 100),
+(2, 'Sudadera', 'Sudadera legendaria', '1742892743958_sudadera_legendaria.jpg', 200),
 (3, 'Item C', 'Description for Item C', 'img_c.png', 300),
 (4, 'Item D', 'Description for Item D', 'img_d.png', 400);
 
