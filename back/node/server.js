@@ -183,48 +183,72 @@ app.delete('/users/:id', async (req, res) => {
     }
 });
 
-app.post('/player', async (req, res) => {
+app.post('/players', async (req, res) => {
     try {
+        console.log('📥 Nueva solicitud recibida en /players');
+        console.log('Headers:', req.headers);
+        console.log('Body:', req.body);
+        console.log('Files:', req.files);
 
-        //verificar si se envió la imagen
-        if (!req.files || !req.files.img) {
-            return res.status(400).json({ error: 'Imagen no encontrada' });
+        // Verificar si el campo players existe
+        if (!req.body.players) {
+            console.error('❌ Error: Se requiere un array de jugadores en la solicitud');
+            return res.status(400).json({ error: 'Se requiere un array de jugadores en la solicitud' });
         }
 
-        //Obtener de la request
-        const { img } = req.files;
-        const { name } = req.body;
+        let players;
+        try {
+            const parsedBody = JSON.parse(req.body.players);
+            players = Array.isArray(parsedBody.players) ? parsedBody.players : []; // Parsear el campo players
+        } catch (error) {
+            console.error('❌ Error al parsear el campo players:', error);
+            return res.status(400).json({ error: 'El campo players no tiene un formato válido' });
+        }
 
-        //Validar name
-        if (!name) return res.status(400).json({ error: 'El Nombre del jugador es obligatorio' });
+        console.log('✅ Lista de jugadores recibida:', players);
 
-        //Crear directorio uploads/players
-        const uploadDir = path.join('uploads', 'players');
+        const files = req.files; // Archivos enviados
 
+        const uploadDir = path.join(__dirname, 'uploads', 'players');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
 
-        //Mover la imagen al directorio
-        const imgName = `${Date.now()}_${img.name}`;
-        const imgPath = path.join(uploadDir, imgName);
+        const insertedPlayers = [];
 
-        await img.mv(imgPath);
+        for (const player of players) {
+            const { name, img } = player; // `img` es la clave del archivo en `req.files`
 
-        //Crear el jugador
-        const newPlayer = await Player.create({
-            name,
-            img: imgName
-        });
+            if (!name || !files[img]) {
+                console.log(`❌ Datos incompletos para el jugador: ${name}`);
+                continue;
+            }
 
-        res.status(200).json({ message: "Jugador creado correctamente", player: newPlayer });
+            const imgFile = files[img];
+            const imgName = `${Date.now()}_${imgFile.name}`;
+            const imgPath = path.join(uploadDir, imgName);
+
+            // Mover la imagen al directorio
+            await imgFile.mv(imgPath);
+
+            console.log(`✅ Imagen del jugador ${name} movida correctamente`);
+
+            // Insertar el jugador en la base de datos
+            const newPlayer = await Player.create({
+                name,
+                img: imgName,
+            });
+
+            insertedPlayers.push(newPlayer);
+        }
+
+        console.log('✅ Todos los jugadores procesados correctamente');
+        res.status(200).json({ message: 'Jugadores creados correctamente', players: insertedPlayers });
     } catch (error) {
-        console.error('Error al crear el jugador:', error);
-        res.status(500).json({ error: 'Error al crear el jugador' });
+        console.error('❌ Error al procesar los jugadores:', error);
+        res.status(500).json({ error: 'Error al procesar los jugadores' });
     }
-
 });
-
 app.get('/players', async (req, res) => {
     try {
         const players = await Player.findAll();
