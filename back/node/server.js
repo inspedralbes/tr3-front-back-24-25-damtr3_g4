@@ -15,7 +15,11 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(fileUpload());
-app.use(cors());
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+}));
 app.use('/uploads/items', express.static(path.join(__dirname, 'uploads', 'items')));
 app.use('/uploads/players', express.static(path.join(__dirname, 'uploads', 'players')));
 app.use('/uploads/teams', express.static(path.join(__dirname, 'uploads', 'teams')));
@@ -86,9 +90,10 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+
     try {
         const { email, password } = req.body;
-
+        console.log("passowrd", password, "email", email);
         const user = await Usuaris.findOne({ where: { email } });
 
         if (!user) {
