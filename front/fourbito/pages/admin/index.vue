@@ -22,14 +22,14 @@
                                 <span class="text-lg font-semibold text-gray-200">{{ goalsToWin }}</span>
                             </div>
                         </div>
-                        <div class="mb-8">
+                        <!-- <div class="mb-8">
                             <label class="block text-lg font-semibold mb-4 text-gray-200">Número de Jugadors:</label>
                             <div class="grid grid-cols-2 gap-4">
                                 <div v-for="(player, index) in players" :key="player.id" @click="selectPlayer(player.id)" :class="{'bg-gray-700 hover:bg-gray-600': selectedPlayer !== player.id, 'bg-yellow-400 text-gray-900': selectedPlayer === player.id, 'col-span-2': index === 2}" class="p-4 rounded-lg cursor-pointer transition duration-300 flex items-center justify-center">
                                     <span class="text-lg font-semibold">{{ player.name }}</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                         <div v-if="hasSaved && errorMessage" class="text-red-400 text-sm mb-4">{{ errorMessage }}</div>
                         <div v-if="hasSaved && successMessage" class="text-green-400 text-sm mb-4">{{ successMessage }}</div>
                         <div class="mt-8">
@@ -50,21 +50,21 @@ export default {
         return {
             matchDuration: 5,
             goalsToWin: 3,
-            selectedPlayer: null,
-            players: [
-                { id: 3, name: '3 Jugadors' },
-                { id: 4, name: '4 Jugadors' },
-                { id: 5, name: '5 Jugadors' },
-            ],
+            // selectedPlayer: null,
+            // players: [
+            //     { id: 3, name: '3 Jugadors' },
+            //     { id: 4, name: '4 Jugadors' },
+            //     { id: 5, name: '5 Jugadors' },
+            // ],
             successMessage: '',
             errorMessage: '',
             hasSaved: false
         };
     },
     methods: {
-        selectPlayer(playerId) {
-            this.selectedPlayer = this.selectedPlayer === playerId ? null : playerId;
-        },
+        // selectPlayer(playerId) {
+        //     this.selectedPlayer = this.selectedPlayer === playerId ? null : playerId;
+        // },
         async saveSettings() {
             this.errorMessage = '';
             this.successMessage = '';
@@ -74,16 +74,16 @@ export default {
                 this.hasSaved = true;
                 return;
             }
-            if (!this.selectedPlayer) {
-                this.errorMessage = 'Selecciona un numero de jugadors.';
-                this.hasSaved = true;
-                return;
-            }
+            // if (!this.selectedPlayer) {
+            //     this.errorMessage = 'Selecciona un numero de jugadors.';
+            //     this.hasSaved = true;
+            //     return;
+            // }
             try {
                 const config = {
                     matchDuration: this.matchDuration,
                     goalsToWin: this.goalsToWin,
-                    selectedPlayer: this.selectedPlayer
+                    // selectedPlayer: this.selectedPlayer
                 };
 
                 console.log('Saving config:', config); // Agrega este log para verificar los datos
@@ -103,7 +103,7 @@ export default {
 
                 this.matchDuration = data.matchDuration;
                 this.goalsToWin = data.goalsToWin;
-                this.selectedPlayer = data.selectedPlayer;
+                // this.selectedPlayer = data.selectedPlayer;
 
                 this.successMessage = '';
                 this.hasSaved = true;
