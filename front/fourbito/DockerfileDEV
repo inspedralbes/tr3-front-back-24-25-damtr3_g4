@@ -1,0 +1,11 @@
+# Cambios necesarios en front/fourbito/Dockerfile para producción
+FROM node:23-alpine3.20
+WORKDIR /app
+RUN apk add --no-cache bash
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+ENV NODE_ENV=production
+RUN npm run build
+CMD ["npm", "run", "start"]
