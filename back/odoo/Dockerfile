@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Instalar dependencias de producción (sin dependencias de desarrollo)
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copiar el código de la aplicación
 COPY . .
@@ -18,4 +18,4 @@ EXPOSE 4002
 ENV NODE_ENV=production
 
 # Comando para iniciar la aplicación en modo producción
-CMD ["npm", "start"]
+CMD ["npm", "run", "start"]

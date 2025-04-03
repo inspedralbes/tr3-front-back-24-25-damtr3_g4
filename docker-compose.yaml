@@ -33,10 +33,10 @@ services:
     environment:
       - NODE_ENV=production
       # Usar variables del archivo .env principal
-      - DB_NAME=${NODE_DB_NAME}
-      - DB_USER=${NODE_DB_USER}
-      - DB_PASSWORD=${NODE_DB_PASSWORD}
-      - DB_HOST=${NODE_DB_HOST}
+      - DB_NAME=fourbito
+      - DB_USER=root
+      - DB_PASSWORD=y38BpTG@v9X
+      - DB_HOST=fourbito-mysql
     env_file:
       - .env
     restart: always
@@ -53,10 +53,10 @@ services:
       # En producción, mejor no exponer directamente la base de datos
       - "3306:3306"
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=dbRootFourbit0
+      - MYSQL_DATABASE=fourbito
+      - MYSQL_USER=fourbito
+      - MYSQL_PASSWORD=Lzkf9V681@8
     volumes:
       - fourbito-mysql-data:/var/lib/mysql
     restart: always
@@ -67,9 +67,8 @@ services:
     build:
       context: ./back/odoo
       dockerfile: Dockerfile
-    command: sh -c "cp .env.DEV .env && npm install && npm start"
-    volumes:
-      - fourbito-odoo-data:/usr/src/app/node_modules
+    # volumes:
+    #   - fourbito-odoo-data:/usr/src/app/node_modules
     working_dir: /usr/src/app
     ports:
       - "4002:4002"
@@ -106,8 +105,8 @@ services:
       - "8069:8069"
     environment:
       - HOST=fourbito-odoo-db
-      - USER=${ODOO_USER}
-      - PASSWORD=${ODOO_PASSWORD}
+      - USER=odoo
+      - PASSWORD=DnB3S5P@JR6
     volumes:
       - odoo-data:/var/lib/odoo
       - ./back/odoo/odoo_files/config:/etc/odoo
@@ -121,8 +120,8 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_USER: ${ODOO_DB_USER}
-      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD}
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: dbodoo
       POSTGRES_DB: odoo
     volumes:
       - odoo-db-data:/var/lib/postgresql/data
@@ -134,8 +133,8 @@ services:
     ports:
       - "127.0.0.1:8081:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_DEFAULT_EMAIL: admin@fourbitoo.com
+      PGADMIN_DEFAULT_PASSWORD: 8P5k3_64@6WU
     depends_on:
       - fourbito-odoo-db
     volumes:
